@@ -18,12 +18,10 @@ def save_email(content):
 
 
 raw_email = sys.stdin.read()
+email = {'body': raw_email}
 
 if config.save_email == True:
     save_email(raw_email)
-
-#email = {'body': raw_email}
-email = {'bod1y': raw_email}
 
 try:
     r = requests.post(config.end_point, data=email)
