@@ -3,9 +3,11 @@
 import sys
 import requests
 import hashlib
+import base64
 from postmail import config, configure
 
 configure()
+
 
 def get_hash(content):
     return hashlib.md5(content).hexdigest()
@@ -17,26 +19,30 @@ def save_email(content):
         fp.write(content)
 
 
-raw_email = sys.stdin.read()
-email = {'body': raw_email}
+def main(raw_email):
+    encode = base64.standard_b64encode(raw_email)
+    email = {'body': encode}
 
-if config.save_email == True:
-    save_email(raw_email)
+    if config.save_email:
+        save_email(raw_email)
 
-try:
-    r = requests.post(config.end_point, data=email)
+    try:
+        r = requests.post(config.end_point, data=email)
 
-# if there is a http connection or timeout issue, have postfix try again.
-except requests.ConnectionError as c:
-    print 'ConnectionError: %s' % c
-    sys.exit(75)
-except requests.Timeout as t:
-    print 'Timeout:m %s' % t
-    sys.exit(75)
+    # if there is a http connection or timeout issue, have postfix try again.
+    except requests.ConnectionError as c:
+        print 'ConnectionError: %s' % c
+        sys.exit(75)
+    except requests.Timeout as t:
+        print 'Timeout:m %s' % t
+        sys.exit(75)
 
-# if respose code is not equal to 201, print headers to log, bounce.
-if r.status_code != 201:
-    print r.text
-    print r.headers
-    save_email(raw_email)
-    sys.exit(78)
+    # if respose code is not equal to 201, print headers to log, bounce.
+    if r.status_code != 201:
+        print r.text
+        print r.headers
+        save_email(raw_email)
+        sys.exit(78)
+
+if __name__ == '__main__':
+    main(sys.stdin.read())
