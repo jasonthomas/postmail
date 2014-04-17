@@ -74,7 +74,6 @@ def main(raw_email):
     config = configure(options.environment)
 
     if config['save_email']:
-        print "yya"
         save_email(config['save_path'], raw_email)
 
     post_mail(config['end_point'], config['save_path'],  raw_email)
